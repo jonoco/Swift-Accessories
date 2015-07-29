@@ -41,8 +41,7 @@ class XXButton: SKNode {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
-		println("button intercepted touch")
+	override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
 		if userInteractionEnabled {
 			callback!()
 		}
