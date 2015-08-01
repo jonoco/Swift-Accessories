@@ -1,6 +1,7 @@
 //
 //  XXButton.swift
 //  Button
+//	0.1.1
 //
 //  Created by Joshua Cox on 7/27/15.
 //  Copyright (c) 2015 Joshua Cox. All rights reserved.
@@ -11,9 +12,7 @@ import SpriteKit
 class XXButton: SKNode {
 	private var background : SKShapeNode
 	private var label : SKLabelNode
-	
-	/// Function called when button is touched; only when instantiated with callback.
-	var callback : (() -> Void)?
+	private var callback : (() -> Void)?
 	
 	///	Instantiate a convienient button styled node. Determine touch events using node name.
 	init(size: CGSize, text: String) {
@@ -37,6 +36,15 @@ class XXButton: SKNode {
 		userInteractionEnabled = true
 	}
 	
+	/// Instantiate button node with a texture and callback function.
+	convenience init(texture: SKTexture, callback: () -> Void) {
+		self.init(size: texture.size(), text: "")
+		self.callback = callback
+		background.fillTexture = texture
+		background.strokeColor = UIColor.clearColor()
+		userInteractionEnabled = true
+	}
+	
 	required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
@@ -52,7 +60,6 @@ class XXButton: SKNode {
 		background.name = name
 		label.name = name
 	}
-	
 	/// Change the button text.
 	func setTextTo(text: String) {
 		label.text = text
@@ -77,6 +84,12 @@ class XXButton: SKNode {
 	func setBorderColorTo(color: UIColor) {
 		background.strokeColor = color
 	}
+	/// Assign a callback to button.
+	func setCallbackTo(callback: () -> Void) {
+		self.callback = callback
+		userInteractionEnabled = true
+	}
+
 }
 
 
