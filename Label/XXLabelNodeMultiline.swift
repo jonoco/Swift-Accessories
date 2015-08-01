@@ -1,6 +1,7 @@
 //
 //  XXLabelNodeMultiline.swift
 //  Multiline Label Node
+//	0.1.1
 //
 //  Created by Joshua Cox on 6/26/15.
 //  Copyright (c) 2015 Joshua Cox. All rights reserved.
@@ -8,9 +9,8 @@
 
 import SpriteKit
 
-/**
-		Generates multiple SKLabelNodes to create a convenient multiline label node
-*/
+
+/// Generates multiple SKLabelNodes to create a convenient multiline label node
 class XXLabelNodeMultiline: SKNode {
 	
 	var fontSize: CGFloat = 52.0 {didSet {update()}}
@@ -20,21 +20,21 @@ class XXLabelNodeMultiline: SKNode {
 	var horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center {didSet {update()}}
 	var text: String {didSet {update()}}
 	var predicate: String {didSet {update()}}
-	/**
-			Space between lines of text in pixels. Default 0.0.
-	*/
+	
+	///	Space between lines of text in pixels. Default 0.0.
 	var verticalLineSpacing: CGFloat = 0.0 {didSet {update()}}
 	
-	/**
-			Divides lines of text with \n.
-	*/
+	/// Initialize an empty label node.
+	override convenience init() {
+		self.init(text: "", predicate: "\n")
+	}
+	
+	///	Divides lines of text with \n.
 	convenience init(text: String) {
 		self.init(text: text, predicate: "\n")
 	}
 	
-	/**
-			Choose a predicate for line breaks e.g., "/n"
-	*/
+	/// Choose a predicate for line breaks e.g., "/n"
 	init(text: String, predicate: String) {
 		self.text = text
 		self.predicate = predicate
@@ -47,7 +47,7 @@ class XXLabelNodeMultiline: SKNode {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	func createLines() {
+	private func createLines() {
 		removeAllChildren()
 		
 		let lines = text.componentsSeparatedByString(predicate)
@@ -62,7 +62,7 @@ class XXLabelNodeMultiline: SKNode {
 		}
 	}
 	
-	func update() {
+	private func update() {
 		createLines()
 		
 		for var i = 0 ; i < children.count ; i++ {
