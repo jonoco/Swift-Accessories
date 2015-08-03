@@ -1,7 +1,7 @@
 //
 //  XXButton.swift
 //  Button
-//	0.1.3
+//	0.1.4
 //
 //  Created by Joshua Cox on 7/27/15.
 //  Copyright (c) 2015 Joshua Cox. All rights reserved.
@@ -16,6 +16,11 @@ class XXButton: SKNode {
 	private var callback : (() -> Void)?
 	private var argCallback : ((AnyObject) -> Void)?
 	private var arg : AnyObject?
+	
+	private var upTexture : SKTexture?
+	private var downTexture : SKTexture?
+	private var upColor : UIColor?
+	private var downColor : UIColor?
 	
 	///	Instantiate a convienient button styled node. Determine touch events using node name.
 	init(size: CGSize, text: String) {
@@ -70,16 +75,24 @@ class XXButton: SKNode {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
+	override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+		if downColor != nil { background.fillColor = downColor! }
+		if downTexture != nil { background.fillTexture = downTexture! }
+	}
+	
 	override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
-		if pressedAction != nil {
-			runAction(pressedAction!)
-		}
+		if upColor != nil { background.fillColor = upColor! }
+		if upTexture != nil { background.fillTexture = upTexture! }
+		
+		if pressedAction != nil { runAction(pressedAction!) }
 		
 		if userInteractionEnabled {
 			if argCallback != nil { argCallback!(arg!) }
 			if callback != nil { callback!() }
 		}
 	}
+	
+	// MARK: Properties
 	
 	/// Set all child node names of the Button node.
 	func setNameTo(name: String) {
@@ -110,6 +123,9 @@ class XXButton: SKNode {
 	func setBorderColorTo(color: UIColor) {
 		background.strokeColor = color
 	}
+	
+	// MARK: Callbacks
+	
 	/// Assign a callback to button.
 	func setCallbackTo(callback: () -> Void) {
 		resetCallbacks()
@@ -121,10 +137,28 @@ class XXButton: SKNode {
 		self.argCallback = callback
 		self.arg = arg ?? self
 	}
-	/// Action played when the button is pressed.
+	
+	// MARK: Pressed state
+	
+	/// Set a texture for rest state.
+	func setTextureTo(texture: SKTexture) {
+		self.upTexture = texture
+	}
+	/// Set a texture for pressed state. Requires a callback to be set.
+	func setPressedTextureTo(texture: SKTexture) {
+		self.downTexture = texture
+	}
+	/// Set a color for pressed state. Not used if a texture is used. Requires a callback to be set.
+	func setPressedColorTo(color: UIColor) {
+		self.upColor = background.fillColor
+		self.downColor = color
+	}
+	/// Action played when the button is pressed. Requires a callback to be set
 	func setPressedActionTo(action: SKAction) {
 		self.pressedAction = action
 	}
+	
+	// MARK: Private functions
 	
 	private func resetCallbacks() {
 		userInteractionEnabled = true
