@@ -1,7 +1,7 @@
 //
 //  XXButton.swift
 //  Button
-//	0.1.1
+//	0.1.3
 //
 //  Created by Joshua Cox on 7/27/15.
 //  Copyright (c) 2015 Joshua Cox. All rights reserved.
@@ -12,7 +12,10 @@ import SpriteKit
 class XXButton: SKNode {
 	private var background : SKShapeNode
 	private var label : SKLabelNode
+	private var pressedAction : SKAction?
 	private var callback : (() -> Void)?
+	private var argCallback : ((AnyObject) -> Void)?
+	private var arg : AnyObject?
 	
 	///	Instantiate a convienient button styled node. Determine touch events using node name.
 	init(size: CGSize, text: String) {
@@ -36,10 +39,28 @@ class XXButton: SKNode {
 		userInteractionEnabled = true
 	}
 	
+	/// Instantiate button node with callback with an arguement. If arg is nil, the button object will be passed.
+	convenience init(size: CGSize, text: String, callback: (AnyObject) -> Void, _ arg: AnyObject?) {
+		self.init(size: size, text: text)
+		self.argCallback = callback
+		self.arg = arg ?? self
+		userInteractionEnabled = true
+	}
+	
 	/// Instantiate button node with a texture and callback function.
 	convenience init(texture: SKTexture, callback: () -> Void) {
 		self.init(size: texture.size(), text: "")
 		self.callback = callback
+		background.fillTexture = texture
+		background.strokeColor = UIColor.clearColor()
+		userInteractionEnabled = true
+	}
+	
+	/// Instantiate button node with a texture and callback function with an arguement. If arg is nil, the button object will be passed.
+	convenience init(texture: SKTexture, callback: (AnyObject) -> Void, _ arg: AnyObject?) {
+		self.init(size: texture.size(), text: "")
+		self.argCallback = callback
+		self.arg = arg ?? self
 		background.fillTexture = texture
 		background.strokeColor = UIColor.clearColor()
 		userInteractionEnabled = true
@@ -50,8 +71,13 @@ class XXButton: SKNode {
 	}
 	
 	override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
+		if pressedAction != nil {
+			runAction(pressedAction!)
+		}
+		
 		if userInteractionEnabled {
-			callback!()
+			if argCallback != nil { argCallback!(arg!) }
+			if callback != nil { callback!() }
 		}
 	}
 	
@@ -86,10 +112,25 @@ class XXButton: SKNode {
 	}
 	/// Assign a callback to button.
 	func setCallbackTo(callback: () -> Void) {
+		resetCallbacks()
 		self.callback = callback
-		userInteractionEnabled = true
 	}
-
+	/// Assign a callback with an arguement. If arg is nil, self will be passed.
+	func setCallbackTo(callback: (AnyObject) -> Void, _ arg: AnyObject?) {
+		resetCallbacks()
+		self.argCallback = callback
+		self.arg = arg ?? self
+	}
+	/// Action played when the button is pressed.
+	func setPressedActionTo(action: SKAction) {
+		self.pressedAction = action
+	}
+	
+	private func resetCallbacks() {
+		userInteractionEnabled = true
+		self.callback = nil
+		self.argCallback = nil
+	}
 }
 
 
