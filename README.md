@@ -14,6 +14,9 @@ Drop them into your project or use them as a starting point to create something 
 ## Usage
 ### Button
 ```swift
+
+    import SpriteKit
+    
     let buttonSize = CGSize(width: 100, height: 50)
     let myTexture = SKTexture(imageNamed: "texture.png")
     	
