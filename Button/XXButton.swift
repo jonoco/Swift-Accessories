@@ -1,7 +1,7 @@
 //
 //  XXButton.swift
 //  Button
-//	0.1.7
+//	0.2.0
 //
 //  Created by Joshua Cox on 7/27/15.
 //  MIT License
@@ -29,7 +29,7 @@ class XXButton: SKNode {
 	private var downColor : UIColor?
 	private static var defaultUpColor : UIColor = UIColor(red: 125/255, green: 130/255, blue: 138/255, alpha: 1.0)
 	private static var defaultDownColor : UIColor?
-	
+
 	///	Instantiate a convenient button styled node. Determine touch events using node name.
 	init(size: CGSize, text: String) {
 		background = SKShapeNode(
@@ -50,21 +50,6 @@ class XXButton: SKNode {
 		addChild(label)
 	}
 	
-	/// DEPRECATED: use setCallback - Instantiate button node with callback.
-	convenience init(size: CGSize, text: String, callback: () -> Void) {
-		self.init(size: size, text: text)
-		self.callback = callback
-		userInteractionEnabled = true
-	}
-	
-	/// DEPRECATED: use setCallback - Instantiate button node with callback with an arguement. If arg is nil, the button object will be passed.
-	convenience init(size: CGSize, text: String, callback: (AnyObject) -> Void, _ arg: AnyObject?) {
-		self.init(size: size, text: text)
-		self.argCallback = callback
-		self.arg = arg ?? self
-		userInteractionEnabled = true
-	}
-	
 	/// Instantiate button node with a texture.
 	convenience init(texture: SKTexture) {
 		self.init(size: texture.size(), text: "")
@@ -72,47 +57,18 @@ class XXButton: SKNode {
 		background.strokeColor = UIColor.clearColor()
 	}
 	
-	/// DEPRECATED: use setCallback - Instantiate button node with a texture and callback function.
-	convenience init(texture: SKTexture, callback: () -> Void) {
-		self.init(size: texture.size(), text: "")
-		self.callback = callback
-		background.fillTexture = texture
-		background.strokeColor = UIColor.clearColor()
-		userInteractionEnabled = true
-	}
-	
-	/// DEPRECATED: use setCallback - Instantiate button node with a texture and callback function with an arguement. If arg is nil, the button object will be passed.
-	convenience init(texture: SKTexture, callback: (AnyObject) -> Void, _ arg: AnyObject?) {
-		self.init(size: texture.size(), text: "")
-		self.argCallback = callback
-		self.arg = arg ?? self
-		background.fillTexture = texture
-		background.strokeColor = UIColor.clearColor()
-		userInteractionEnabled = true
-	}
-	
 	required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
+	// MARK: - Touch functions
+	
 	override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
-		if downColor != nil { background.fillColor = downColor! }
-		else if downTexture != nil { background.fillTexture = downTexture! }
-		else if XXButton.defaultDownTexture != nil { background.fillTexture = XXButton.defaultDownTexture!}
-		else if XXButton.defaultDownColor != nil {background.fillColor = XXButton.defaultDownColor!}
-		
-		if pressedAction != nil { runAction(pressedAction!) }
-		else if XXButton.defaultAction != nil { runAction(XXButton.defaultAction!)}
+		pressDown()
 	}
 	
 	override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
-		if upColor != nil { background.fillColor = upColor! }
-		else if upTexture != nil { background.fillTexture = upTexture! }
-		else if XXButton.defaultUpTexture != nil { background.fillTexture = XXButton.defaultUpTexture! }
-		else {background.fillColor = XXButton.defaultUpColor}
-		
-//		if pressedAction != nil { runAction(pressedAction!) }
-//		else if XXButton.defaultAction != nil { runAction(XXButton.defaultAction!)}
+		pressUp()
 		
 		if userInteractionEnabled {
 			if argCallback != nil { argCallback!(arg!) }
@@ -238,7 +194,35 @@ class XXButton: SKNode {
 		return self
 	}
 	
+	// MARK: - Utility functions
+	
+	/// Simulate a press without running the button's callback.
+	func simulatePress() {
+		pressDown()
+		runAction(SKAction.sequence([
+			SKAction.waitForDuration(0.05),
+			SKAction.runBlock(pressUp)
+		]))
+	}
+	
 	// MARK: - Private functions
+	
+	private func pressDown() {
+		if downColor != nil { background.fillColor = downColor! }
+		else if downTexture != nil { background.fillTexture = downTexture! }
+		else if XXButton.defaultDownTexture != nil { background.fillTexture = XXButton.defaultDownTexture!}
+		else if XXButton.defaultDownColor != nil {background.fillColor = XXButton.defaultDownColor!}
+		
+		if pressedAction != nil { runAction(pressedAction!) }
+		else if XXButton.defaultAction != nil { runAction(XXButton.defaultAction!)}
+	}
+	
+	private func pressUp() {
+		if upColor != nil { background.fillColor = upColor! }
+		else if upTexture != nil { background.fillTexture = upTexture! }
+		else if XXButton.defaultUpTexture != nil { background.fillTexture = XXButton.defaultUpTexture! }
+		else {background.fillColor = XXButton.defaultUpColor}
+	}
 	
 	private func resetCallbacks() {
 		userInteractionEnabled = true
@@ -246,11 +230,42 @@ class XXButton: SKNode {
 		self.argCallback = nil
 	}
 	
+	// MARK: - Template Options
+	
 	struct Color {
-		static let Red = UIColor(red: 221/255, green: 113/255, blue: 102/255, alpha: 1)
-		static let Cyan = UIColor(red: 80/255, green: 221/255, blue: 231/255, alpha: 1)
-		static let Green = UIColor(red: 150/255, green: 221/255, blue: 119/255, alpha: 1)
+		static let Red	  = UIColor(red: 221/255, green: 113/255, blue: 102/255, alpha: 1)
+		static let Cyan 	= UIColor(red:  80/255, green: 221/255, blue: 231/255, alpha: 1)
+		static let Green 	= UIColor(red: 150/255, green: 221/255, blue: 119/255, alpha: 1)
 		static let Purple = UIColor(red: 161/255, green: 182/255, blue: 255/255, alpha: 1)
+		static let Gray   = UIColor(red: 125/255, green: 130/255, blue: 138/255, alpha: 1)
+	}
+	
+	struct Animations {
+		static let Pop : SKAction = {
+			var anim = SKAction.group([
+				SKAction.sequence([
+					SKAction.scaleBy(1.1, duration: 0.05),
+					SKAction.scaleTo(1.0, duration: 0.05)]),
+				SKAction.sequence([
+					SKAction.fadeAlphaTo(0.85, duration: 0.05),
+					SKAction.fadeAlphaTo(1.0, duration: 0.05)])
+				])
+			anim.timingMode = SKActionTimingMode.EaseInEaseOut
+			return anim
+		}()
+		
+		static let Flop : SKAction = {
+			var anim = SKAction.group([
+				SKAction.sequence([
+					SKAction.moveByX(0, y: -15, duration: 0.05),
+					SKAction.moveByX(0, y: 15, duration: 0.05)]),
+				SKAction.sequence([
+					SKAction.fadeAlphaTo(0.8, duration: 0.05),
+					SKAction.fadeAlphaTo(1.0, duration: 0.05)])
+				])
+			anim.timingMode = SKActionTimingMode.Linear
+			return anim
+			}()
 	}
 }
 
