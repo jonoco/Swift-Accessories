@@ -18,24 +18,28 @@ Drop them into your project or use them as a starting point to create something 
     import SpriteKit
     
     let buttonSize = CGSize(width: 100, height: 50)
-    let myTexture = SKTexture(imageNamed: "texture.png")
     	
-    // Use textures or simple color backgrounds
+    // Use textures or the default color backgrounds to style buttons
     let colorButton   = XXButton(size: buttonSize, text: "a button")
-    let textureButton = XXButton(texture: myTexture)
+    let textureButton = XXButton(texture: SKTexture)
     
-    // Set default behavior on one button to extend them to other buttons
+    // Set default behavior on one button to extend them to all other buttons
     let topButton = XXButton(size: buttonSize, text: "top button")
 		.setDefaultActionTo(
 				SKAction.sequence([
 					SKAction.scaleBy(1.1, duration: 0.05),
 					SKAction.scaleTo(1.0, duration: 0.05)]))
-	    .setCallbackTo(callback, nil)
-	
-	// Chain methods to assign multiple button properties
+    
+    // Override defaults by setting individual behaviors
+    let topButton = XXButton(size: buttonSize, text: "top button")
+    	.setActionTo(nil)
+    
+	// Chain methods to assign multiple properties
 	let rightButton = XXButton(size: buttonSize, text: "right button")
-		.setBackgroundColorTo(UIColor(XXButton.Color.Cyan)
+		.setBackgroundColorTo(XXButton.Color.Cyan)
+		.setPressedColorTo(XXButton.Color.Gray)
 		.setCallbackTo(callback, nil)
+		.setFontSizeTo(80)
 		
 	// Set callbacks with or without arguements
 	let buttonA = XXButton(size: buttonSize, text: "no argument")
@@ -54,4 +58,18 @@ Drop them into your project or use them as a starting point to create something 
 	  let arg = arg as! String
 	  println(arg)
 	}
+	
+	// Or just use a closure in place of a callback
+	let buttonC = XXButton(size: buttonSize, text: "closure time")
+		.setCallbackTo({
+			let msg = "this seems reckless"
+			println(msg)
+		})
+	
+	// Use the style templates to help prototype or whatever
+	let styleButton = XXButton(size: buttonSize, text: "i'm fancy")
+		.setBackgroundColorTo(XXButton.Color.Red)
+		.setPressedActionTo(XXButton.Animations.Pop)
+		
+		// Check out XXButton.Color & XXButton.Animations for all options
 ```
