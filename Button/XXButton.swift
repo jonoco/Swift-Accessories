@@ -1,11 +1,10 @@
 //
 //  XXButton.swift
 //  Button
-//	0.2.0
+//	0.2.1
 //
 //  Created by Joshua Cox on 7/27/15.
-//  MIT License
-//  Copyright (c) 2015 Joshua Cox. All rights reserved.
+//  MIT License 2015 Joshua Cox
 //
 
 import SpriteKit
@@ -21,6 +20,12 @@ class XXButton: SKNode {
 	private var argCallback : ((AnyObject) -> Void)?
 	private var arg : AnyObject?
 	
+	private var toggled : Bool?
+	private var checkBox : Bool = false
+	private var radio : Bool = false
+	private var radioCallsign : Int = 0
+	private var radioGroup : String = "radioGroup"
+	
 	private var upTexture : SKTexture?
 	private var downTexture : SKTexture?
 	private static var defaultUpTexture : SKTexture?
@@ -30,7 +35,7 @@ class XXButton: SKNode {
 	private static var defaultUpColor : UIColor = UIColor(red: 125/255, green: 130/255, blue: 138/255, alpha: 1.0)
 	private static var defaultDownColor : UIColor?
 
-	///	Instantiate a convenient button styled node. Determine touch events using node name.
+	///	Instantiate a convenient button styled node.
 	init(size: CGSize, text: String) {
 		background = SKShapeNode(
 			rect: CGRectMake(-size.width/2, -size.height/2, size.width, size.height),
@@ -54,7 +59,6 @@ class XXButton: SKNode {
 	convenience init(texture: SKTexture) {
 		self.init(size: texture.size(), text: "")
 		background.fillTexture = texture
-		background.strokeColor = UIColor.clearColor()
 	}
 	
 	required init?(coder aDecoder: NSCoder) {
@@ -64,11 +68,15 @@ class XXButton: SKNode {
 	// MARK: - Touch functions
 	
 	override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
+		if radio {
+			NSNotificationCenter.defaultCenter().postNotificationName(radioGroup, object: radioCallsign)
+			return
+		}
 		pressDown()
 	}
 	
 	override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
-		pressUp()
+		if !radio { pressUp() }
 		
 		if userInteractionEnabled {
 			if argCallback != nil { argCallback!(arg!) }
@@ -107,6 +115,31 @@ class XXButton: SKNode {
 	/// Change the button's border color, default is UIColor.clearColor.
 	func setBorderColorTo(color: UIColor) -> XXButton {
 		background.strokeColor = color
+		return self
+	}
+	/// Enable checkbox behavior; button can be toggled off and on.
+	func setCheckboxOn() -> XXButton {
+		checkBox = true
+		return self
+	}
+	/** 
+			Change toggled state; e.g., checked or unchecked.
+			IMPORTANT: If you are instantiating a button to be already toggled on,
+			set toggled state property after setting a pressed color or texture.
+	*/
+	func setToggledStateTo(state: Bool) -> XXButton {
+		if state { pressDown() }
+		else { toggled = false }
+		return self
+	}
+	/// Enable radio behavior with an optional group identifier.
+	func setRadioOn(group: String?) -> XXButton {
+		radio = true
+		radioGroup = group ?? "radioGroup"
+		radioCallsign = random()
+		
+		NSNotificationCenter.defaultCenter().addObserver(self, selector: "radioAlert:", name: radioGroup, object: nil)
+
 		return self
 	}
 	
@@ -208,6 +241,7 @@ class XXButton: SKNode {
 	// MARK: - Private functions
 	
 	private func pressDown() {
+	
 		if downColor != nil { background.fillColor = downColor! }
 		else if downTexture != nil { background.fillTexture = downTexture! }
 		else if XXButton.defaultDownTexture != nil { background.fillTexture = XXButton.defaultDownTexture!}
@@ -215,9 +249,13 @@ class XXButton: SKNode {
 		
 		if pressedAction != nil { runAction(pressedAction!) }
 		else if XXButton.defaultAction != nil { runAction(XXButton.defaultAction!)}
+		
+		if checkBox { toggled = (toggled == true) ? false : true } // only toggle on touch for a checkbox
 	}
 	
 	private func pressUp() {
+		if checkBox { if toggled! {return} }
+	
 		if upColor != nil { background.fillColor = upColor! }
 		else if upTexture != nil { background.fillTexture = upTexture! }
 		else if XXButton.defaultUpTexture != nil { background.fillTexture = XXButton.defaultUpTexture! }
@@ -228,6 +266,19 @@ class XXButton: SKNode {
 		userInteractionEnabled = true
 		self.callback = nil
 		self.argCallback = nil
+	}
+	
+	/// Invokes alert to radio group.
+	func radioAlert(msg: AnyObject) {
+		let activeCallsign = msg.object as! Int
+		
+		if (radioCallsign == activeCallsign) {
+			pressDown()
+			toggled = true
+		} else {
+			pressUp()
+			toggled = false
+		}
 	}
 	
 	// MARK: - Template Options
