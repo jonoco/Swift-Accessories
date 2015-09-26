@@ -5,6 +5,7 @@ Drop them into your project or use them as a starting point to create something 
 ### Acessories
 - [Button](#button)
 - Multiline Label
+- [Tilemap](#tilemap)
 
 ## Installation
 1. Drag the .swift file into your project, make sure to check <b>Copy Items If Needed</b>.
@@ -107,4 +108,29 @@ Drop them into your project or use them as a starting point to create something 
 			.setActive()
 	let radioButtonOff = XXButton(size: CGSize, text: String)
 			.setRadioOn(nil)
+```
+### Tilemap
+	- Experimental utility
+ 	- Currently only supports .json tilemaps
+#### Importing tilemap
+```swift
+	let path = "tilemap.json"
+	let tilemap = XXTileMap(fileName: path)
+```
+#### Building tile layers
+```swift
+	for layerName in tilemap.tileLayersNames() {
+		let tileLayer = tilemap.getTileLayer(layerName)
+		addChild(tileLayer)
+	}
+```
+#### Retrieving object layer data
+```swift
+	for objName in tilemap.objectLayersNames() {
+		let objLayer = tilemap.getObjectLayer(objName)
+		
+		for obj in objLayer! {
+			// handle objects for each object layer as you please
+		}
+	}
 ```
