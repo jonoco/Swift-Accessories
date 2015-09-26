@@ -110,8 +110,9 @@ Drop them into your project or use them as a starting point to create something 
 			.setRadioOn(nil)
 ```
 ### Tilemap
-	- Experimental utility
- 	- Currently only supports .json tilemaps
+- Experimental utility
+- Currently only supports .json tilemaps (xml & gzip handling planned)
+
 #### Importing tilemap
 ```swift
 	let path = "tilemap.json"
